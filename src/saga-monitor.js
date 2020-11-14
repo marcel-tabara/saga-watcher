@@ -181,7 +181,7 @@ const createSagaMonitor = (options = {}) => {
       get(details, 'fn', false) &&
         get(details, 'args[0].type', false) &&
         get(desc, 'effect.payload.action.type', false) &&
-        console.log(`%c ${get(details, 'fn', 'some saga')} listens ${get(details, 'args[0].type', 'some action')} and calls ${get(desc, 'effect.payload.action.type', 'some other stuff')}`, 'color: red')
+        console.log(`%c ${get(details, 'fn', 'some saga')} listens ${get(details, 'args[0].type', 'some action')} and ${get(desc, 'effect.type', 'calls').toLowerCase()}s ${get(desc, 'effect.payload.action.type', 'some other stuff')}`, 'color: red')
     }
 
     manager.set(
@@ -203,7 +203,7 @@ const createSagaMonitor = (options = {}) => {
 
     resolveEffect(effectId, result)
 
-    current && console.log('########## current.type', current.type)
+    // current && console.log('########## current.type', current.type)
     const shouldRemove = ['PUT'].includes(get(current, 'type', 'ASA')) || !parent || parent.type === undefined
 
     if (shouldRemove) {
