@@ -127,9 +127,9 @@ const createSagaMonitor = (options = {}) => {
     )
   }
 
-  const getDetails = data => {
+  const getParent = data => {
     const parent = mainStore.effects.find(e => e.effectId === data.parentEffectId)
-    return parent && parent.payload
+    return parent
   }
 
   const effectTriggered = (desc) => {
@@ -173,15 +173,14 @@ const createSagaMonitor = (options = {}) => {
       }
 
       mainStore.effects.push(record)
-      // console[level]("%c effectTriggered:", styles, desc.effectId, desc)
-      const details = getDetails(desc)
+      const parent = getParent(desc)
 
       console.log('########## mainStore', mainStore)
 
-      get(details, 'fn', false) &&
-        get(details, 'args[0].type', false) &&
+      get(parent, 'payload.fn', false) &&
+        get(parent, 'payload.args[0].type', false) &&
         get(desc, 'effect.payload.action.type', false) &&
-        console.log(`%c ${get(details, 'fn', 'some saga')} listens ${get(details, 'args[0].type', 'some action')} and ${get(desc, 'effect.type', 'calls').toLowerCase()}s ${get(desc, 'effect.payload.action.type', 'some other stuff')}`, 'color: red')
+        console.log(`%c ${get(parent, 'payload.fn', 'some saga')} listens ${get(parent, 'payload.args[0].type', 'some action')} and ${get(desc, 'effect.type', 'calls').toLowerCase()}s ${get(desc, 'effect.payload.action.type', 'some other stuff')}`,  'background: #F0F0F0; color: red; padding: 10px')
     }
 
     manager.set(
@@ -199,16 +198,16 @@ const createSagaMonitor = (options = {}) => {
     }
 
     const current = mainStore.effects.find(e => e.effectId === effectId)
-    const parent = current && mainStore.effects.find(e => e.effectId === current.parentEffectId)
+    const parent = current && getParent(current)
 
     resolveEffect(effectId, result)
 
     // current && console.log('########## current.type', current.type)
     const shouldRemove = ['PUT'].includes(get(current, 'type', 'ASA')) || !parent || parent.type === undefined
 
-    if (shouldRemove) {
-      console.log('########## REMOVING ', effectId,  get(parent, 'effectId', '---'))
-    }
+    // if (shouldRemove) {
+    //   console.log('########## REMOVING ', effectId,  get(parent, 'effectId', '---'))
+    // }
 
     shouldRemove && remove(mainStore.effects, e => e.effectId === effectId || e.effectId === get(parent, 'effectId'))
   }
