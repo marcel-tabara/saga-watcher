@@ -111,7 +111,7 @@ const createSagaMonitor = (options = {}) => {
     actionDispatch
   } = config
 
-  let styles = [`color: ${color}`, "font-weight: bold"].join("")
+  let styles = [`color: ${color};`, "font-weight: bold;", "background: #F0F0F0;", "padding: 10px; border-radius: 10px;"].join("")
 
   const rootSagaStarted = (desc) => {
     if (rootSagaStart) {
@@ -127,60 +127,52 @@ const createSagaMonitor = (options = {}) => {
     )
   }
 
-  const getParent = data => {
-    const parent = mainStore.effects.find(e => e.effectId === data.parentEffectId)
-    return parent
+  const getParent = data => mainStore.effects.find(e => e.effectId === data.parentEffectId)
+  const getArgs = args => {
+    if (!Boolean(args)) {
+      return ''
+    } else if (Array.isArray(args)) {
+      return getArgFromArray(args)
+    }
+
+    switch ( typeof args) {
+      case 'function':
+        return args.name
+      case 'object':
+        return getArgFromObject(args)
+      case 'number':
+      case 'bigint':
+      case 'boolean':
+      case 'string':
+        return args
+      default:
+        return undefined
+    }
+  }
+
+  const getArgFromArray = arg => arg.map(e => getArgs(e))
+  const getArgFromObject = arg => {
+    let tmp = {}
+
+    for (const [key, value] of Object.entries(arg)) {
+      tmp[key] = getArgs(value)
+    }
+    return tmp
   }
 
   const effectTriggered = (desc) => {
     if (effectTrigger) {
-      const getArgs = args => {
-        if (!Boolean(args)) {
-          return ''
-        } else if (Array.isArray(args)) {
-          return getArgFromArray(args)
-        }
-
-        switch ( typeof args) {
-          case 'function':
-            return args.name
-          case 'object':
-            return getArgFromObject(args)
-          case 'number':
-          case 'bigint':
-          case 'boolean':
-          case 'string':
-            return args
-          default:
-            return undefined
-        }
-      }
-
-      const getArgFromArray = arg => arg.map(e => getArgs(e))
-      const getArgFromObject = arg => {
-        let tmp = {}
-
-        for (const [key, value] of Object.entries(arg)) {
-          tmp[key] = getArgs(value)
-        }
-        return tmp
-      }
-      const record = {
-        effectId: desc.effectId,
-        type: desc.effect.type,
-        parentEffectId: desc.parentEffectId,
-        payload: getArgs(desc.effect.payload),
-      }
-
-      mainStore.effects.push(record)
+      mainStore.effects.push(getArgs(desc))
       const parent = getParent(desc)
-
+      const shouldShow = get(parent, 'effect.payload.fn', false) &&
+        get(parent, 'effect.payload.args[0].type', false) &&
+        get(desc, 'effect.payload.action.type', false)
       console.log('########## mainStore', mainStore)
 
-      get(parent, 'payload.fn', false) &&
-        get(parent, 'payload.args[0].type', false) &&
-        get(desc, 'effect.payload.action.type', false) &&
-        console.log(`%c ${get(parent, 'payload.fn', 'some saga')} listens ${get(parent, 'payload.args[0].type', 'some action')} and ${get(desc, 'effect.type', 'calls').toLowerCase()}s ${get(desc, 'effect.payload.action.type', 'some other stuff')}`,  'background: #F0F0F0; color: red; padding: 10px')
+      const msg = `${get(parent, 'effect.payload.fn', 'some saga')} listens ${get(parent, 'effect.payload.args[0].type', 'some action')} and ${get(desc, 'effect.type', 'calls').toLowerCase()}s ${get(desc, 'effect.payload.action.type', 'some other stuff')}`
+
+      shouldShow &&
+        console.log(`%c${msg}`, styles)
     }
 
     manager.set(
@@ -200,16 +192,17 @@ const createSagaMonitor = (options = {}) => {
     const current = mainStore.effects.find(e => e.effectId === effectId)
     const parent = current && getParent(current)
 
+    console.log('########## parent', parent)
+
     resolveEffect(effectId, result)
 
-    // current && console.log('########## current.type', current.type)
     const shouldRemove = ['PUT'].includes(get(current, 'type', 'ASA')) || !parent || parent.type === undefined
 
-    // if (shouldRemove) {
-    //   console.log('########## REMOVING ', effectId,  get(parent, 'effectId', '---'))
-    // }
+    if (shouldRemove) {
+      console.log('########## REMOVING ', effectId,  get(parent, 'effectId', '---'))
+    }
 
-    shouldRemove && remove(mainStore.effects, e => e.effectId === effectId || e.effectId === get(parent, 'effectId'))
+    // shouldRemove && remove(mainStore.effects, e => e.effectId === effectId || e.effectId === get(parent, 'effectId'))
   }
 
   const effectRejected = (effectId, error) => {
