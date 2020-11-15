@@ -1,6 +1,8 @@
 /* eslint-disable no-console */
 import * as is from "@redux-saga/is"
 import get from 'lodash/get'
+import { version } from "../package.json"
+import { isRaceEffect } from "./modules/checkers"
 import {
   CANCELLED,
   IS_BROWSER,
@@ -9,11 +11,8 @@ import {
   REJECTED,
   RESOLVED
 } from "./modules/constants"
-import { isRaceEffect } from "./modules/checkers"
 import logSaga from "./modules/logSaga"
 import Manager from "./modules/Manager"
-import { version } from "../package.json"
-import remove from 'lodash/remove'
 
 const mainStore = { effects: [] }
 const LOG_SAGAS_STYLE = "font-weight: bold"
@@ -159,20 +158,39 @@ const createSagaMonitor = (options = {}) => {
     }
     return tmp
   }
+  const getData = (e) => {
+    const getMore = (e) => getArgs(get(e, 'effect.payload.args[0].type'), false)
+      ? ' listens ' + getArgs(get(e, 'effect.payload.args[0].type')) + ' and'
+      : ''
+    switch (get(e, 'effect.type')) {
+      case 'FORK':
+      case 'CALL':
+        return getArgs(get(e, 'effect.payload.fn')) + getMore(e)
+      case 'PUT':
+        return getArgs(get(e, 'effect.payload.action.type'))
+      default:
+        return ''
+    }
+  }
 
   const effectTriggered = (desc) => {
     if (effectTrigger) {
       mainStore.effects.push(getArgs(desc))
       const parent = getParent(desc)
-      const shouldShow = get(parent, 'effect.payload.fn', false) &&
-        get(parent, 'effect.payload.args[0].type', false) &&
-        get(desc, 'effect.payload.action.type', false)
-      console.log('########## mainStore', mainStore)
 
-      const msg = `${get(parent, 'effect.payload.fn', 'some saga')} listens ${get(parent, 'effect.payload.args[0].type', 'some action')} and ${get(desc, 'effect.type', 'calls').toLowerCase()}s ${get(desc, 'effect.payload.action.type', 'some other stuff')}`
+      // console.log('########## desc', desc)
+      // console.log('########## parent', parent)
+      // console.log('########## mainStore', mainStore)
 
-      shouldShow &&
-        console.log(`%c${msg}`, styles)
+      // const msg = `${get(parent, 'effect.payload.fn', 'some saga')} listens ${get(parent, 'effect.payload.args[0].type', 'some action')} and ${get(desc, 'effect.type', 'calls').toLowerCase()}s ${get(desc, 'effect.payload.action.type', 'some other stuff')}`
+
+      const list = ['SELECT', 'TAKE', 'FORK', 'RACE', 'ALL']
+
+      const msg = !list.includes(get(desc, 'effect.type', '')) && parent && get(desc, 'effect.type', false)
+        ? `${getData(parent)} ${get(desc, 'effect.type', '').toLowerCase()}s ${getData(desc)}`
+        : ''
+
+      msg.length && console.log(`%c${msg}`, styles)
     }
 
     manager.set(
@@ -192,15 +210,13 @@ const createSagaMonitor = (options = {}) => {
     const current = mainStore.effects.find(e => e.effectId === effectId)
     const parent = current && getParent(current)
 
-    console.log('########## parent', parent)
-
     resolveEffect(effectId, result)
 
     const shouldRemove = ['PUT'].includes(get(current, 'type', 'ASA')) || !parent || parent.type === undefined
 
-    if (shouldRemove) {
-      console.log('########## REMOVING ', effectId,  get(parent, 'effectId', '---'))
-    }
+    // if (shouldRemove) {
+    //   console.log('########## REMOVING ', effectId,  get(parent, 'effectId', '---'))
+    // }
 
     // shouldRemove && remove(mainStore.effects, e => e.effectId === effectId || e.effectId === get(parent, 'effectId'))
   }
