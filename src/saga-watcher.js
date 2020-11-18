@@ -1,6 +1,7 @@
 /* eslint-disable no-console */
 import * as is from "@redux-saga/is"
 import get from 'lodash/get'
+import remove from 'lodash/remove'
 import { version } from "../package.json"
 import { isRaceEffect } from "./modules/checkers"
 import {
@@ -212,13 +213,13 @@ const createSagaMonitor = (options = {}) => {
 
     resolveEffect(effectId, result)
 
-    const shouldRemove = ['PUT'].includes(get(current, 'type', 'ASA')) || !parent || parent.type === undefined
+    const shouldRemove = ['PUT'].includes(get(current, 'effect.type', ''))
 
-    // if (shouldRemove) {
-    //   console.log('########## REMOVING ', effectId,  get(parent, 'effectId', '---'))
-    // }
+    if (shouldRemove) {
+      console.log('########## REMOVING ', effectId,  get(parent, 'effectId', '---'))
+    }
 
-    // shouldRemove && remove(mainStore.effects, e => e.effectId === effectId || e.effectId === get(parent, 'effectId'))
+    shouldRemove && remove(mainStore.effects, e => e.effectId === effectId)
   }
 
   const effectRejected = (effectId, error) => {

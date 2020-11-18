@@ -12,11 +12,11 @@ const SRC_DIR = path.resolve("src");
 const DIST_DIR = path.resolve("dist");
 
 export default {
-  input: path.join(SRC_DIR, "saga-monitor.js"),
+  input: path.join(SRC_DIR, "saga-watcher.js"),
   output: {
     name: "SagaMonitor",
     exports: "named",
-    file: path.join(DIST_DIR, "saga-monitor.js"),
+    file: path.join(DIST_DIR, "saga-watcher.js"),
     format: "umd"
   },
   plugins: [
@@ -43,7 +43,7 @@ export default {
           fs.mkdirSync(DIST_DIR);
         }
 
-        fs.writeFileSync(path.join(DIST_DIR, "saga-monitor.min.js"), result.code, "utf8");
+        fs.writeFileSync(path.join(DIST_DIR, "saga-watcher.min.js"), result.code, "utf8");
       }
     }
   ]
