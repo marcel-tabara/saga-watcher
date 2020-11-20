@@ -1,7 +1,6 @@
 /* eslint-disable no-console */
 import * as is from '@redux-saga/is';
 import get from 'lodash/get';
-import remove from 'lodash/remove';
 import { version } from '../package.json';
 import { isRaceEffect } from './modules/checkers';
 import {
@@ -199,7 +198,6 @@ const createSagaMonitor = (options = {}) => {
 
     const effectTriggered = (desc) => {
         if (effectTrigger) {
-            // mainStore.effects.push(getArgs(desc));
             const parent = getParent(desc);
 
             const getType = () =>
@@ -219,23 +217,13 @@ const createSagaMonitor = (options = {}) => {
                           '',
                       ).toLowerCase()}s ${getData(desc, 'c')} ${getType()}`
                     : '';
-            const shouldRemove =
-                msg.length || // get(desc, 'effect.type', true) ||
-                ['CANCELLED', 'TAKE', 'SELECT'].includes(get(desc, 'effect.type', ''))
-                    ? true
-                    : false;
 
-            // shouldRemove && console.log('########## desc', desc);
-            mainStore.effects.push({ ...getArgs(desc), shouldRemove });
+            !['takeLatest', 'takeEvery'].includes(
+                get(desc, 'effect.payload.fn', ''),
+            ) &&
+                get(desc, 'effect.type', '') === 'FORK' &&
+                mainStore.effects.push(getArgs(desc));
             msg.length && console.log(`%c${msg}`, styles);
-            // msg.length &&
-            //     console.log(
-            //         '########## ---',
-            //         desc,
-            //         parent,
-            //         grandParent,
-            //         grandGParent,
-            //     );
         }
 
         manager.set(
@@ -251,29 +239,7 @@ const createSagaMonitor = (options = {}) => {
         if (effectResolve) {
             console[level]('%c effectResolved:', styles, effectId, result);
         }
-
-        const current = mainStore.effects.find((e) => e.effectId === effectId);
-        // const parent = current && getParent(current);
-
         resolveEffect(effectId, result);
-
-        get(current, 'shouldRemove', false) &&
-            console.log(
-                '########## REMOVING ',
-                effectId,
-                mainStore.effects.length,
-            );
-
-        // get(current, 'shouldRemove', false) &&
-        //     console.log('########## current', current);
-        get(current, 'shouldRemove', false) &&
-            remove(mainStore.effects, (e) => e.effectId === effectId);
-
-        // console.log(
-        //     '########## store,',
-        //     mainStore.effects.length,
-        //     mainStore.effects,
-        // );
     };
 
     const effectRejected = (effectId, error) => {
@@ -305,8 +271,8 @@ const createSagaMonitor = (options = {}) => {
             );
         }
         // Export the snapshot-logging function to run from the browser console or extensions.
-      globalScope.$$LogSagas = () => logSaga(manager, color);
-      globalScope.$$LogStore = () => logStore(manager, color);
+        globalScope.$$LogSagas = () => logSaga(manager, color);
+        globalScope.$$LogStore = () => logStore(manager, color);
     }
 
     return {
@@ -320,8 +286,8 @@ const createSagaMonitor = (options = {}) => {
 };
 
 const logStore = () => {
-  console.log('## Store ##',  mainStore.effects)
-}
+    console.log('## Store ##', mainStore.effects);
+};
 
 // Version
 createSagaMonitor.VERSION = version;
