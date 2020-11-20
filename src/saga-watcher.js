@@ -220,8 +220,8 @@ const createSagaMonitor = (options = {}) => {
                       ).toLowerCase()}s ${getData(desc, 'c')} ${getType()}`
                     : '';
             const shouldRemove =
-                msg.length ||
-                ['CANCELLED', 'TAKE'].includes(get(desc, 'effect.type', ''))
+                msg.length || // get(desc, 'effect.type', true) ||
+                ['CANCELLED', 'TAKE', 'SELECT'].includes(get(desc, 'effect.type', ''))
                     ? true
                     : false;
 
@@ -257,12 +257,12 @@ const createSagaMonitor = (options = {}) => {
 
         resolveEffect(effectId, result);
 
-        // get(current, 'shouldRemove', false) &&
-        //     console.log(
-        //         '########## REMOVING ',
-        //         effectId,
-        //         mainStore.effects.length,
-        //     );
+        get(current, 'shouldRemove', false) &&
+            console.log(
+                '########## REMOVING ',
+                effectId,
+                mainStore.effects.length,
+            );
 
         // get(current, 'shouldRemove', false) &&
         //     console.log('########## current', current);
@@ -305,7 +305,8 @@ const createSagaMonitor = (options = {}) => {
             );
         }
         // Export the snapshot-logging function to run from the browser console or extensions.
-        globalScope.$$LogSagas = () => logSaga(manager, color);
+      globalScope.$$LogSagas = () => logSaga(manager, color);
+      globalScope.$$LogStore = () => logStore(manager, color);
     }
 
     return {
@@ -318,12 +319,17 @@ const createSagaMonitor = (options = {}) => {
     };
 };
 
+const logStore = () => {
+  console.log('## Store ##',  mainStore.effects)
+}
+
 // Version
 createSagaMonitor.VERSION = version;
 logSaga.VERSION = version;
 
 // Export the snapshot-logging function for arbitrary use by external code.
 export { logSaga };
+export { logStore };
 
 // Export the `sagaMonitor` to pass to the middleware.
 export default createSagaMonitor;
