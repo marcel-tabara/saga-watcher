@@ -1,10 +1,12 @@
 /* eslint-disable no-console */
 import * as is from '@redux-saga/is';
 import get from 'lodash/get';
+import remove from 'lodash/remove';
 import { version } from '../package.json';
 import { isRaceEffect } from './modules/checkers';
 import {
     CANCELLED,
+    defaultConfig,
     IGNORELIST,
     IS_BROWSER,
     IS_REACT_NATIVE,
@@ -12,10 +14,11 @@ import {
     REJECTED,
     RESOLVED,
 } from './modules/constants';
+import { getArgs, getData, getEffect  } from './modules/helper';
 import logSaga from './modules/logSaga';
 import Manager from './modules/Manager';
 
-const mainStore = { effects: [] };
+const mainStore = [];
 const LOG_SAGAS_STYLE = 'font-weight: bold';
 
 const globalScope = IS_BROWSER ? window : IS_REACT_NATIVE ? global : null;
@@ -85,24 +88,13 @@ const setRaceWinner = (raceEffectId, result) => {
     }
 };
 
-const defaultConfig = {
-    level: 'debug',
-    color: '#03A9F4',
-    verbose: true,
-    rootSagaStart: false,
-    effectTrigger: false,
-    effectResolve: false,
-    effectReject: false,
-    effectCancel: false,
-    actionDispatch: false,
-};
-
 const createSagaMonitor = (options = {}) => {
     const config = { ...defaultConfig, ...options };
 
     const {
         level,
         verbose,
+        styles,
         color,
         rootSagaStart,
         effectTrigger,
@@ -111,13 +103,6 @@ const createSagaMonitor = (options = {}) => {
         effectCancel,
         actionDispatch,
     } = config;
-
-    let styles = [
-        `color: ${color};`,
-        'font-weight: bold;',
-        'background: #F0F0F0;',
-        'padding: 10px; border-radius: 10px;',
-    ].join('');
 
     const rootSagaStarted = (desc) => {
         if (rootSagaStart) {
@@ -138,92 +123,36 @@ const createSagaMonitor = (options = {}) => {
         );
     };
 
-    const getParent = (data) =>
-        mainStore.effects.find((e) => e.effectId === data.parentEffectId);
-    const getArgs = (args) => {
-        if (!Boolean(args)) {
-            return '';
-        } else if (Array.isArray(args)) {
-            return getArgFromArray(args);
-        }
-
-        switch (typeof args) {
-            case 'function':
-                return args.name;
-            case 'object':
-                return getArgFromObject(args);
-            case 'number':
-            case 'bigint':
-            case 'boolean':
-            case 'string':
-                return args;
-            default:
-                return undefined;
-        }
-    };
-
-    const getArgFromArray = (arg) => arg.map((e) => getArgs(e));
-    const getArgFromObject = (arg) => {
-        let tmp = {};
-
-        for (const [key, value] of Object.entries(arg)) {
-            tmp[key] = getArgs(value);
-        }
-        return tmp;
-    };
-
-    const getData = (e, type = 'c') => {
-        const getType = () =>
-            type === 'p' && get(e, 'effect.type') === 'FORK'
-                ? 'saga'
-                : 'function';
-        const getMore = (e) =>
-            type === 'p' &&
-            getType() !== 'function' &&
-            getArgs(get(e, 'effect.payload.args[0].type'), false)
-                ? ` ${getType()} triggered by ${getArgs(
-                      get(e, 'effect.payload.args[0].type'),
-                  )} action`
-                : '';
-        switch (get(e, 'effect.type')) {
-            case 'FORK':
-            case 'CALL':
-                return getArgs(get(e, 'effect.payload.fn')) + getMore(e);
-            case 'PUT':
-                return getArgs(get(e, 'effect.payload.action.type'));
-            default:
-                return '';
-        }
-    };
-
     const effectTriggered = (desc) => {
         if (effectTrigger) {
-            const parent = getParent(desc);
+            const parent = getEffect(mainStore, {effectId: desc.parentEffectId});
 
             const getType = () =>
-                get(parent, 'effect.type') === 'FORK' &&
-                get(desc, 'effect.payload.fn', false)
-                    ? 'function'
-                    : 'action';
+                get(desc, 'effect.payload.fn', false) ? 'function' : 'action';
 
             const msg =
                 !IGNORELIST.includes(get(desc, 'effect.type', '')) &&
                 get(desc, 'effect.type', false) &&
-                getData(desc, 'c').length &&
                 parent
-                    ? `${getData(parent, 'p')} ${get(
+                    ? `${getData(parent, 'parent')} ${get(
                           desc,
                           'effect.type',
                           '',
-                      ).toLowerCase()}s ${getData(desc, 'c')} ${getType()}`
+                      ).toLowerCase()}s ${getData(desc, 'child')} ${getType()}`
                     : '';
 
-            !['takeLatest', 'takeEvery'].includes(
-                get(desc, 'effect.payload.fn', ''),
-            ) &&
-                get(desc, 'effect.type', '') === 'FORK' &&
-                mainStore.effects.push(getArgs(desc));
+            const shouldSave =
+            //     !['takeLatest', 'takeEvery'].includes(
+            //     get(desc, 'effect.payload.fn', ''),
+            // ) &&
+                ['FORK', 'CALL', 'PUT', 'ALL'].includes(
+                    get(desc, 'effect.type', ''),
+                )
+            shouldSave &&
+                mainStore.push(getArgs(desc));
             msg.length && console.log(`%c${msg}`, styles);
+
+            console.log('########## desc', shouldSave, desc)
         }
 
         manager.set(
@@ -235,11 +164,18 @@ const createSagaMonitor = (options = {}) => {
         );
     };
 
+    const cleanStore = effectId => {
+        const current = getEffect(mainStore, {effectId});
+        const parent = current && getEffect(mainStore, {effectId: current.parentEffectId});
+        !Boolean(parent) && remove(mainStore, (e) => e.effectId === effectId);
+    }
+
     const effectResolved = (effectId, result) => {
         if (effectResolve) {
             console[level]('%c effectResolved:', styles, effectId, result);
         }
         resolveEffect(effectId, result);
+        cleanStore(effectId)
     };
 
     const effectRejected = (effectId, error) => {
@@ -247,6 +183,7 @@ const createSagaMonitor = (options = {}) => {
             console[level]('%c effectRejected:', styles, effectId, error);
         }
         rejectEffect(effectId, error);
+        cleanStore(effectId)
     };
 
     const effectCancelled = (effectId) => {
@@ -254,6 +191,7 @@ const createSagaMonitor = (options = {}) => {
             console[level]('%c effectCancelled:', styles, effectId);
         }
         cancelEffect(effectId);
+        cleanStore(effectId)
     };
 
     const actionDispatched = (action) => {
@@ -286,7 +224,7 @@ const createSagaMonitor = (options = {}) => {
 };
 
 const logStore = () => {
-    console.log('## Store ##', mainStore.effects);
+    console.log('## Store ##', mainStore);
 };
 
 // Version

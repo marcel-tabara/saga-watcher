@@ -18,3 +18,21 @@ export const IGNORELIST = [
   'PENDING',
   'REJECTED'
 ]
+
+export const defaultConfig = {
+  level: 'debug',
+  color: '#03A9F4',
+  verbose: true,
+  rootSagaStart: false,
+  effectTrigger: false,
+  effectResolve: false,
+  effectReject: false,
+  effectCancel: false,
+  actionDispatch: false,
+  styles: [
+    `color: red;`,
+    'font-weight: bold;',
+    'background: #F0F0F0;',
+    'padding: 10px; border-radius: 10px;',
+  ].join('')
+};
