@@ -1,7 +1,7 @@
 /* eslint-disable no-console */
-import * as is from '@redux-saga/is';
-import { version } from '../package.json';
-import { isRaceEffect } from './modules/checkers';
+import * as is from '@redux-saga/is'
+import { version } from '../package.json'
+import { isRaceEffect } from './modules/checkers'
 import {
   CANCELLED,
   defaultConfig,
@@ -10,83 +10,83 @@ import {
   PENDING,
   REJECTED,
   RESOLVED,
-} from './modules/constants';
-import { getArgs, getEffect } from './modules/helper';
-import logSaga from './modules/logSaga';
-import Manager from './modules/Manager';
+} from './modules/constants'
+import { getArgs, getEffect } from './modules/helper'
+import logSaga from './modules/logSaga'
+import Manager from './modules/Manager'
 
-const mainStore = [];
-const LOG_SAGAS_STYLE = 'font-weight: bold';
+const mainStore = []
+const LOG_SAGAS_STYLE = 'font-weight: bold'
 
-const globalScope = IS_BROWSER ? window : IS_REACT_NATIVE ? global : null;
+const globalScope = IS_BROWSER ? window : IS_REACT_NATIVE ? global : null
 
 const time = () =>
   typeof performance !== 'undefined' && performance.now
     ? performance.now()
-    : Date.now();
+    : Date.now()
 
-const manager = new Manager();
+const manager = new Manager()
 
-const computeEffectDur = (effect) => {
-  const now = time();
+const computeEffectDur = effect => {
+  const now = time()
   Object.assign(effect, {
     end: now,
     duration: now - effect.start,
-  });
-};
+  })
+}
 
 const resolveEffect = (effectId, result) => {
-  const effect = manager.get(effectId);
+  const effect = manager.get(effectId)
 
   if (is.task(result)) {
     result.toPromise().then(
-      (taskResult) => {
+      taskResult => {
         if (result.isCancelled()) {
-          cancelEffect(effectId);
+          cancelEffect(effectId)
         } else {
-          resolveEffect(effectId, taskResult);
+          resolveEffect(effectId, taskResult)
         }
       },
-      (taskError) => rejectEffect(effectId, taskError),
-    );
+      taskError => rejectEffect(effectId, taskError)
+    )
   } else {
-    computeEffectDur(effect);
-    effect.status = RESOLVED;
-    effect.result = result;
+    computeEffectDur(effect)
+    effect.status = RESOLVED
+    effect.result = result
     if (isRaceEffect(effect.effect)) {
-      setRaceWinner(effectId, result);
+      setRaceWinner(effectId, result)
     }
   }
-};
+}
 
 const rejectEffect = (effectId, error) => {
-  const effect = manager.get(effectId);
-  computeEffectDur(effect);
-  effect.status = REJECTED;
-  effect.error = error;
+  const effect = manager.get(effectId)
+  computeEffectDur(effect)
+  effect.status = REJECTED
+  effect.error = error
   if (isRaceEffect(effect.effect)) {
-    setRaceWinner(effectId, error);
+    setRaceWinner(effectId, error)
   }
-};
+}
 
-const cancelEffect = (effectId) => {
-  const effect = manager.get(effectId);
-  computeEffectDur(effect);
-  effect.status = CANCELLED;
-};
+const cancelEffect = effectId => {
+  const effect = manager.get(effectId)
+  computeEffectDur(effect)
+  effect.status = CANCELLED
+}
 
 const setRaceWinner = (raceEffectId, result) => {
-  const winnerLabel = Object.keys(result)[0];
+  const winnerLabel = Object.keys(result)[0]
   for (const childId of manager.getChildIds(raceEffectId)) {
-    const childEffect = manager.get(childId);
+    const childEffect = manager.get(childId)
     if (childEffect.label === winnerLabel) {
-      childEffect.winner = true;
+      childEffect.winner = true
     }
   }
-};
+}
 
 const createSagaMonitor = (options = {}) => {
-  const config = { ...defaultConfig, ...options };
+  const config = { ...defaultConfig, ...options }
 
   const {
     level,
@@ -100,16 +100,16 @@ const createSagaMonitor = (options = {}) => {
     showDataWithMessage,
     getMessage,
     cleanStore,
-  } = config;
+  } = config
 
-  const rootSagaStarted = (desc) => {
+  const rootSagaStarted = desc => {
     if (rootSagaStart) {
       console[level](
         '%c Root saga started:',
         styles,
         desc.saga.name || 'anonymous',
-        desc.args,
-      );
+        desc.args
+      )
     }
 
     manager.setRootEffect(
@@ -117,34 +117,28 @@ const createSagaMonitor = (options = {}) => {
       Object.assign({}, desc, {
         status: PENDING,
         start: time(),
-      }),
-    );
-  };
+      })
+    )
+  }
 
-  const lll = [];
-  let total = 0;
+  let totalMessages = 0
 
-  const effectTriggered = (desc) => {
+  const effectTriggered = desc => {
     if (effectTrigger) {
       const parent = getEffect(mainStore, {
         effectId: desc.parentEffectId,
-      });
+      })
 
-      const msg = getMessage(desc, parent);
+      const msg = getMessage(desc, parent)
 
-      msg && total++;
+      msg && totalMessages++
 
-      //   if (!lll.includes(get(desc, 'effect.type', ''))) {
-      //     lll.push(get(desc, 'effect.type', ''));
-      //   }
-      // console.log('########## lll', lll);
-
-      mainStore.push(getArgs(desc));
+      mainStore.push(getArgs(desc))
       msg
         ? showDataWithMessage
           ? console.log(`%c${msg}`, styles, { current: desc, parent })
           : console.log(`%c${msg}`, styles)
-        : undefined;
+        : undefined
     }
 
     manager.set(
@@ -152,56 +146,58 @@ const createSagaMonitor = (options = {}) => {
       Object.assign({}, desc, {
         status: PENDING,
         start: time(),
-      }),
-    );
-  };
+      })
+    )
+  }
 
-  const getCleanStoreData = (effectId) => {
-    const current = getEffect(mainStore, { effectId });
+  const getCleanStoreData = effectId => {
+    const current = getEffect(mainStore, { effectId })
     const parent =
-      current && getEffect(mainStore, { effectId: current.parentEffectId });
-    return { current, parent, mainStore };
-  };
+      current && getEffect(mainStore, { effectId: current.parentEffectId })
+    return { current, parent, mainStore }
+  }
 
   const effectResolved = (effectId, result) => {
     if (effectResolve) {
-      console[level]('%c effectResolved:', styles, effectId, result);
+      console[level]('%c effectResolved:', styles, effectId, result)
     }
-    resolveEffect(effectId, result);
-    cleanStore(getCleanStoreData(effectId));
-  };
+    resolveEffect(effectId, result)
+    cleanStore(getCleanStoreData(effectId))
+  }
 
   const effectRejected = (effectId, error) => {
     if (effectReject) {
-      console[level]('%c effectRejected:', styles, effectId, error);
+      console[level]('%c effectRejected:', styles, effectId, error)
     }
-    rejectEffect(effectId, error);
-    cleanStore(getCleanStoreData(effectId));
-  };
+    rejectEffect(effectId, error)
+    cleanStore(getCleanStoreData(effectId))
+  }
 
-  const effectCancelled = (effectId) => {
+  const effectCancelled = effectId => {
     if (effectCancel) {
-      console[level]('%c effectCancelled:', styles, effectId);
+      console[level]('%c effectCancelled:', styles, effectId)
     }
-    cancelEffect(effectId);
-    cleanStore(getCleanStoreData(effectId));
-  };
+    cancelEffect(effectId)
+    cleanStore(getCleanStoreData(effectId))
+  }
 
-  const actionDispatched = (action) => {
+  const actionDispatched = action => {
     if (actionDispatch) {
-      console[level]('%c actionDispatched:', styles, action);
+      console[level]('%c actionDispatched:', styles, action)
     }
-  };
+  }
 
   if (globalScope) {
     console[level](
       'View Sagas by executing %c$$LogSagas()',
       LOG_SAGAS_STYLE,
-      'in the console',
-    );
+      'in the console'
+    )
 
-    globalScope.$$LogSagas = () => logSaga(manager, styles.color);
-    globalScope.$$LogStore = () => logStore(manager, styles.color);
+    globalScope.$$LogSagas = () => logSaga(manager, styles.color)
+    globalScope.$$LogStore = () => logStore(manager, styles.color)
+    globalScope.$$LogTotalMessages = () =>
+      logTotalMessages(manager, styles.color)
   }
 
   return {
@@ -211,17 +207,21 @@ const createSagaMonitor = (options = {}) => {
     effectRejected,
     effectCancelled,
     actionDispatched,
-  };
-};
+  }
+}
 
 const logStore = () => {
-  console.log('## Store ##', mainStore);
-};
+  console.log('## Store ##', mainStore)
+}
+const logTotalMessages = () => {
+  console.log('## Messages ##', totalMessages)
+}
 
-createSagaMonitor.VERSION = version;
-logSaga.VERSION = version;
+createSagaMonitor.VERSION = version
+logSaga.VERSION = version
 
-export { logSaga };
-export { logStore };
+export { logSaga }
+export { logStore }
+export { logTotalMessages }
 
-export default createSagaMonitor;
+export default createSagaMonitor

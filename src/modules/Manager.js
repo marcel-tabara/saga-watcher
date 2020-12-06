@@ -1,36 +1,36 @@
 /** The manager is used for bookkeeping all the effect descriptors */
 export default class Manager {
   constructor() {
-    this.rootIds = [];
+    this.rootIds = []
     // effect-id-to-effect-descriptor
-    this.map = {};
+    this.map = {}
     // effect-id-to-array-of-child-id
-    this.childIdsMap = {};
+    this.childIdsMap = {}
   }
 
   get(effectId) {
-    return this.map[effectId];
+    return this.map[effectId]
   }
 
   set(effectId, desc) {
-    this.map[effectId] = desc;
+    this.map[effectId] = desc
 
     if (this.childIdsMap[desc.parentEffectId] == null) {
-      this.childIdsMap[desc.parentEffectId] = [];
+      this.childIdsMap[desc.parentEffectId] = []
     }
-    this.childIdsMap[desc.parentEffectId].push(effectId);
+    this.childIdsMap[desc.parentEffectId].push(effectId)
   }
 
   setRootEffect(effectId, desc) {
-    this.rootIds.push(effectId);
-    this.set(effectId, Object.assign({ root: true }, desc));
+    this.rootIds.push(effectId)
+    this.set(effectId, Object.assign({ root: true }, desc))
   }
 
   getRootIds() {
-    return this.rootIds;
+    return this.rootIds
   }
 
   getChildIds(parentEffectId) {
-    return this.childIdsMap[parentEffectId] || [];
+    return this.childIdsMap[parentEffectId] || []
   }
 }
