@@ -16,6 +16,8 @@ import logSaga from './modules/logSaga'
 import Manager from './modules/Manager'
 
 const mainStore = []
+let totalMessages = 0
+
 const LOG_SAGAS_STYLE = 'font-weight: bold'
 
 const globalScope = IS_BROWSER ? window : IS_REACT_NATIVE ? global : null
@@ -120,8 +122,6 @@ const createSagaMonitor = (options = {}) => {
       })
     )
   }
-
-  let totalMessages = 0
 
   const effectTriggered = desc => {
     if (effectTrigger) {
