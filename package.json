@@ -1,15 +1,31 @@
 {
   "name": "saga-watcher",
-  "version": "0.0.1",
-  "description": "saga-watcher",
-  "main": "dist/saga-watcher.js",
-  "module": "dist/saga-watcher.es.js",
+  "version": "1.0.1",
+  "description": "Simple and configurable redux-saga watcher.",
+  "main": "dist/saga-watcher.cjs.js",
+  "module": "dist/saga-watcher.esm.js",
+  "browser": "dist/saga-watcher.umd.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/marcel-tabara/saga-watcher.git"
+  },
+  "keywords": [
+    "redux",
+    "saga",
+    "react"
+  ],
+  "author": {
+    "name": "Marcel Tabara",
+    "email": "marcel.tabara@gmail.com"
+  },
+  "license": "MIT",
+  "homepage": "https://github.com/marcel-tabara/saga-watcher#readme",
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
-    "cleaninstall": "rimraf ./dist ./node_modules && yarn",
-    "build": "yarn build:dist",
-    "build:dist": "rimraf ./dist && yarn bundle:dist && yarn bundle:es",
-    "bundle:dist": "rollup -c ./resources/rollup-config.js",
-    "bundle:es": "rollup -c ./resources/rollup-config-es.js"
+    "cleaninstall": "rimraf ./dist ./node_modules && yarn && yarn build",
+    "build": "rimraf ./dist &&  rollup -c"
   },
   "peerDependencies": {
     "redux-saga": ">=1.0"

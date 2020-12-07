@@ -87,7 +87,7 @@ const setRaceWinner = (raceEffectId, result) => {
   }
 }
 
-const createSagaMonitor = (options = {}) => {
+const createSagaWatcher = (options = {}) => {
   const config = { ...defaultConfig, ...options }
 
   const {
@@ -217,11 +217,11 @@ const logTotalMessages = () => {
   console.log('## Messages ##', totalMessages)
 }
 
-createSagaMonitor.VERSION = version
+createSagaWatcher.VERSION = version
 logSaga.VERSION = version
 
 export { logSaga }
 export { logStore }
 export { logTotalMessages }
 
-export default createSagaMonitor
+export default createSagaWatcher
