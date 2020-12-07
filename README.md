@@ -11,13 +11,13 @@ By default, all the effects are recorded in the mainStore array, which is used t
 ### Yarn
 
 ```bash
-$ yarn add saga-watcher
+$ yarn add saga-watcher -D
 ```
 
 ### NPM
 
 ```bash
-$ npm install saga-watcher --save
+$ npm install saga-watcher --save-dev
 ```
 
 ## Configuration
@@ -83,7 +83,7 @@ const middleware = [
 ]
 ```
 
-[![console output](https://lh4.googleusercontent.com/QDEZAYOyulWodm3Z-08wNXwE-WhSe4RQ5iAtkkFsFTzbn88nZMbI9QPfEI1mlnQnhQgOjmvRmR6KiQKK0QTH=w1920-h902)]()
+[![console output](https://lh4.googleusercontent.com/QDEZAYOyulWodm3Z-08wNXwE-WhSe4RQ5iAtkkFsFTzbn88nZMbI9QPfEI1mlnQnhQgOjmvRmR6KiQKK0QTH=w1920-h902?raw=true)]()
 
 > Run `$$LogSagas()` in the developer console to display a snapshot of all the available sagas.
 
