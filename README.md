@@ -83,7 +83,7 @@ const middleware = [
 ]
 ```
 
-[![console output](https://lh4.googleusercontent.com/QDEZAYOyulWodm3Z-08wNXwE-WhSe4RQ5iAtkkFsFTzbn88nZMbI9QPfEI1mlnQnhQgOjmvRmR6KiQKK0QTH=w1920-h902?raw=true)]()
+<a href="https://drive.google.com/uc?export=view&id=1NFzH13u96v71eGTYZ-TVDRcOiHm4H3fu"><img src="https://drive.google.com/uc?export=view&id=1NFzH13u96v71eGTYZ-TVDRcOiHm4H3fu" style="width: 650px; max-width: 100%; height: auto" title="Click to enlarge picture" />
 
 > Run `$$LogSagas()` in the developer console to display a snapshot of all the available sagas.
 
