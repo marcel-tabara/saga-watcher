@@ -15,7 +15,7 @@ import { getArgs, getEffect } from './modules/helper'
 import logSaga from './modules/logSaga'
 import Manager from './modules/Manager'
 
-const mainStore = []
+let mainStore = []
 let totalMessages = 0
 
 const LOG_SAGAS_STYLE = 'font-weight: bold'
@@ -129,7 +129,7 @@ const createSagaWatcher = (options = {}) => {
         effectId: desc.parentEffectId,
       })
 
-      const msg = getMessage(desc, parent)
+      const msg = getMessage({ current: desc, parent })
 
       msg && totalMessages++
 
@@ -162,7 +162,7 @@ const createSagaWatcher = (options = {}) => {
       console[level]('%c effectResolved:', styles, effectId, result)
     }
     resolveEffect(effectId, result)
-    cleanStore(getCleanStoreData(effectId))
+    mainStore = cleanStore(getCleanStoreData(effectId))
   }
 
   const effectRejected = (effectId, error) => {
@@ -170,7 +170,7 @@ const createSagaWatcher = (options = {}) => {
       console[level]('%c effectRejected:', styles, effectId, error)
     }
     rejectEffect(effectId, error)
-    cleanStore(getCleanStoreData(effectId))
+    mainStore = cleanStore(getCleanStoreData(effectId))
   }
 
   const effectCancelled = effectId => {
@@ -178,7 +178,7 @@ const createSagaWatcher = (options = {}) => {
       console[level]('%c effectCancelled:', styles, effectId)
     }
     cancelEffect(effectId)
-    cleanStore(getCleanStoreData(effectId))
+    mainStore = cleanStore(getCleanStoreData(effectId))
   }
 
   const actionDispatched = action => {
@@ -190,6 +190,16 @@ const createSagaWatcher = (options = {}) => {
   if (globalScope) {
     console[level](
       'View Sagas by executing %c$$LogSagas()',
+      LOG_SAGAS_STYLE,
+      'in the console'
+    )
+    console[level](
+      'View Store by executing %c$$LogStore()',
+      LOG_SAGAS_STYLE,
+      'in the console'
+    )
+    console[level](
+      'View TotalMessages by executing %c$$LogTotalMessages()',
       LOG_SAGAS_STYLE,
       'in the console'
     )
@@ -214,7 +224,7 @@ const logStore = () => {
   console.log('## Store ##', mainStore)
 }
 const logTotalMessages = () => {
-  console.log('## Messages ##', totalMessages)
+  console.log('## Nr. of Messages ##', totalMessages)
 }
 
 createSagaWatcher.VERSION = version

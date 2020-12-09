@@ -2,7 +2,7 @@
 
 Simple, and configurable redux-saga monitor.
 
-You can define a custom getMessage function to filter the unwanted effects and define a custom message (see the default implementation for example).
+You can define a custom getMessage function to filter unwanted effects and build a custom message (see the default implementation for example).
 
 By default, all the effects are recorded in the mainStore array, which is used to identify the parent effect. You can define a custom cleanStore function to customize the logic for cleaning the store.
 
@@ -38,10 +38,10 @@ const defaultConfig = {
     'padding: 5px; border-radius: 5px;',
   ].join(''), // styles for the message box
   showDataWithMessage: true, // shows current and parrent effects along with the message
-  getMessage: (current, parent) => getMessage(current, parent), // function that receives current and parent effects and lets you filter the effects and define a custom message
-  cleanStore: (current, parent, mainStore) =>
-    cleanStore(current, parent, mainStore),
-} // function that defines the logic for cleaning the effect store
+  getMessage: ({ current, parent }) => getMessage({ current, parent }), // function that receives current and parent effects and lets you filter unwanted effects and build a custom message
+  cleanStore: ({ current, parent, mainStore }) =>
+    cleanStore({ current, parent, mainStore }),
+} // function that returns a clean store
 ```
 
 ## Usage
@@ -64,16 +64,18 @@ const middleware = [
 import createSagaWatcher from 'saga-watcher'
 
 // custom functions to override defaults
-const buildCustomMessage = (current, parent) =>
+const buildCustomMessage = ({ current, parent }) =>
   console.log('custom logic for message')
-const customCleanStore = (current, parent, mainStore) =>
-  console.log('custom logic for cleaning the store')
+const customCleanStore = ({ current, parent, mainStore }) =>
+  current && parent
+    ? mainStore.filter(e => e.effectId !== current.effectId)
+    : mainStore
 
 // configuration
 const config = {
-  getMessage: (current, parent) => buildCustomMessage(current, parent),
-  cleanStore: (current, parent, mainStore) =>
-    customCleanStore(current, parent, mainStore),
+  getMessage: ({ current, parent }) => buildCustomMessage(current, parent),
+  cleanStore: ({ current, parent, mainStore }) =>
+    customCleanStore({ current, parent, mainStore }),
 }
 
 const middleware = [
@@ -83,13 +85,13 @@ const middleware = [
 ]
 ```
 
-<a href="https://drive.google.com/uc?export=view&id=1NFzH13u96v71eGTYZ-TVDRcOiHm4H3fu"><img src="https://drive.google.com/uc?export=view&id=1NFzH13u96v71eGTYZ-TVDRcOiHm4H3fu" style="width: 650px; max-width: 100%; height: auto" title="Click to enlarge picture" />
-
 > Run `$$LogSagas()` in the developer console to display a snapshot of all the available sagas.
 
 > Run `$$LogStore()` in the developer console to display effect store.
 
 > Run `$$LogTotalMessages()` in the developer console to display the number of displayed messages.
+
+<img src="https://drive.google.com/uc?export=view&id=1NFzH13u96v71eGTYZ-TVDRcOiHm4H3fu" style="width: 650px; max-width: 100%; height: auto" />
 
 ## Credits
 

@@ -1,10 +1,10 @@
 import get from 'lodash/get'
-import remove from 'lodash/remove'
 
 export const getEffect = (mainStore, data) =>
   mainStore.find(
     e => e.effectId === data.parentEffectId || e.effectId === data.effectId
   )
+
 export const getArgs = args => {
   const getArgFromArray = arg => arg.map(e => getArgs(e))
   const getArgFromObject = arg => {
@@ -37,7 +37,7 @@ export const getArgs = args => {
   }
 }
 
-export const getMessage = (current, parent) => {
+export const getMessage = ({ current, parent }) => {
   const ignoredEffects = [
     'SELECT',
     'TAKE',
@@ -102,8 +102,7 @@ export const getMessage = (current, parent) => {
     : undefined
 }
 
-export const cleanStore = ({ current, parent, mainStore }) => {
-  Boolean(parent) &&
-    current &&
-    remove(mainStore, e => e.effectId === current.effectId)
-}
+export const cleanStore = ({ current, parent, mainStore }) =>
+  current && parent
+    ? mainStore.filter(e => e.effectId !== current.effectId)
+    : mainStore
