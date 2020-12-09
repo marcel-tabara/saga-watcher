@@ -10,19 +10,13 @@ export const IS_REACT_NATIVE =
   typeof navigator !== 'undefined' && navigator.product === 'ReactNative'
 
 export const defaultConfig = {
-  level: 'debug',
   rootSagaStart: false,
   effectTrigger: true,
   effectResolve: false,
   effectReject: false,
   effectCancel: false,
   actionDispatch: false,
-  styles: [
-    `color: red;`,
-    'font-weight: bold;',
-    'background: #F0F0F0;',
-    'padding: 5px; border-radius: 5px;',
-  ].join(''),
+  styles: ['font-weight: bold;'].join(''),
   showDataWithMessage: true,
   getMessage: (current, parent) => getMessage(current, parent),
   cleanStore: (current, parent, mainStore) =>

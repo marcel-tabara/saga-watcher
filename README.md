@@ -24,19 +24,13 @@ $ npm install saga-watcher --save-dev
 
 ```js
 const defaultConfig = {
-  level: 'debug', // logging level
   rootSagaStart: false, // show root saga start effect
   effectTrigger: true, // show triggered effects
   effectResolve: false, // show resolved effects
   effectReject: false, // show rejected effects
   effectCancel: false, // show cancelled effects
   actionDispatch: false, // show dispatched actions
-  styles: [
-    `color: red;`,
-    'font-weight: bold;',
-    'background: #F0F0F0;',
-    'padding: 5px; border-radius: 5px;',
-  ].join(''), // styles for the message box
+  styles: ['font-weight: bold;'].join(''), // styles for the message box
   showDataWithMessage: true, // shows current and parrent effects along with the message
   getMessage: ({ current, parent }) => getMessage({ current, parent }), // function that receives current and parent effects and lets you filter unwanted effects and build a custom message
   cleanStore: ({ current, parent, mainStore }) =>
@@ -65,7 +59,7 @@ import createSagaWatcher from 'saga-watcher'
 
 // custom functions to override defaults
 const buildCustomMessage = ({ current, parent }) =>
-  console.log('custom logic for message')
+  return 'custom message'
 const customCleanStore = ({ current, parent, mainStore }) =>
   current && parent
     ? mainStore.filter(e => e.effectId !== current.effectId)
@@ -87,7 +81,7 @@ const middleware = [
 
 > Run `$$LogSagas()` in the developer console to display a snapshot of all the available sagas.
 
-> Run `$$LogStore()` in the developer console to display effect store.
+> Run `$$LogStore()` in the developer console to display effects store.
 
 > Run `$$LogTotalMessages()` in the developer console to display the number of displayed messages.
 

@@ -1,5 +1,6 @@
 /* eslint-disable no-console */
 import * as is from '@redux-saga/is'
+import get from 'lodash/get'
 import { version } from '../package.json'
 import { isRaceEffect } from './modules/checkers'
 import {
@@ -91,7 +92,6 @@ const createSagaWatcher = (options = {}) => {
   const config = { ...defaultConfig, ...options }
 
   const {
-    level,
     styles,
     rootSagaStart,
     effectTrigger,
@@ -106,7 +106,7 @@ const createSagaWatcher = (options = {}) => {
 
   const rootSagaStarted = desc => {
     if (rootSagaStart) {
-      console[level](
+      console.log(
         '%c Root saga started:',
         styles,
         desc.saga.name || 'anonymous',
@@ -159,7 +159,10 @@ const createSagaWatcher = (options = {}) => {
 
   const effectResolved = (effectId, result) => {
     if (effectResolve) {
-      console[level]('%c effectResolved:', styles, effectId, result)
+      console.log('%c effectResolved:', styles, {
+        effect: getEffect(mainStore, { effectId }),
+        result,
+      })
     }
     resolveEffect(effectId, result)
     mainStore = cleanStore(getCleanStoreData(effectId))
@@ -167,7 +170,10 @@ const createSagaWatcher = (options = {}) => {
 
   const effectRejected = (effectId, error) => {
     if (effectReject) {
-      console[level]('%c effectRejected:', styles, effectId, error)
+      console.log('%c effectRejected:', styles, {
+        effect: getEffect(mainStore, { effectId }),
+        error,
+      })
     }
     rejectEffect(effectId, error)
     mainStore = cleanStore(getCleanStoreData(effectId))
@@ -175,7 +181,9 @@ const createSagaWatcher = (options = {}) => {
 
   const effectCancelled = effectId => {
     if (effectCancel) {
-      console[level]('%c effectCancelled:', styles, effectId)
+      console.log('%c effectCancelled:', styles, {
+        effect: getEffect(mainStore, { effectId }),
+      })
     }
     cancelEffect(effectId)
     mainStore = cleanStore(getCleanStoreData(effectId))
@@ -183,22 +191,22 @@ const createSagaWatcher = (options = {}) => {
 
   const actionDispatched = action => {
     if (actionDispatch) {
-      console[level]('%c actionDispatched:', styles, action)
+      console.log('%c actionDispatched:', styles, get(action, 'type'), action)
     }
   }
 
   if (globalScope) {
-    console[level](
+    console.log(
       'View Sagas by executing %c$$LogSagas()',
       LOG_SAGAS_STYLE,
       'in the console'
     )
-    console[level](
+    console.log(
       'View Store by executing %c$$LogStore()',
       LOG_SAGAS_STYLE,
       'in the console'
     )
-    console[level](
+    console.log(
       'View TotalMessages by executing %c$$LogTotalMessages()',
       LOG_SAGAS_STYLE,
       'in the console'
