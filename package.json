@@ -1,6 +1,6 @@
 {
   "name": "saga-watcher",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "description": "Simple and configurable redux-saga watcher.",
   "main": "dist/saga-watcher.cjs.js",
   "module": "dist/saga-watcher.esm.js",

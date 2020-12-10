@@ -18,7 +18,8 @@ export const defaultConfig = {
   actionDispatch: false,
   styles: ['font-weight: bold;'].join(''),
   showDataWithMessage: true,
-  getMessage: (current, parent) => getMessage(current, parent),
-  cleanStore: (current, parent, mainStore) =>
-    cleanStore(current, parent, mainStore),
+  getMessage: ({ current, parent, mainStore }) =>
+    getMessage({ current, parent, mainStore }),
+  cleanStore: ({ current, parent, mainStore }) =>
+    cleanStore({ current, parent, mainStore }),
 }

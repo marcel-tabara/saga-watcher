@@ -129,7 +129,7 @@ const createSagaWatcher = (options = {}) => {
         effectId: desc.parentEffectId,
       })
 
-      const msg = getMessage({ current: desc, parent })
+      const msg = getMessage({ current: desc, parent, mainStore })
 
       msg && totalMessages++
 
@@ -232,7 +232,7 @@ const logStore = () => {
   console.log('## Store ##', mainStore)
 }
 const logTotalMessages = () => {
-  console.log('## Nr. of Messages ##', totalMessages)
+  console.log(`## Nr. of Messages: ${totalMessages} ##`)
 }
 
 createSagaWatcher.VERSION = version

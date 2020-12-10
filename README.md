@@ -32,7 +32,8 @@ const defaultConfig = {
   actionDispatch: false, // show dispatched actions
   styles: ['font-weight: bold;'].join(''), // styles for the message box
   showDataWithMessage: true, // shows current and parrent effects along with the message
-  getMessage: ({ current, parent }) => getMessage({ current, parent }), // function that receives current and parent effects and lets you filter unwanted effects and build a custom message
+  getMessage: ({ current, parent, mainStore }) =>
+    getMessage({ current, parent, mainStore }), // function that lets you filter unwanted effects and build a custom message
   cleanStore: ({ current, parent, mainStore }) =>
     cleanStore({ current, parent, mainStore }),
 } // function that returns a clean store
@@ -58,7 +59,7 @@ const middleware = [
 import createSagaWatcher from 'saga-watcher'
 
 // custom functions to override defaults
-const buildCustomMessage = ({ current, parent }) =>
+const buildCustomMessage = ({ current, parent, mainStore }) =>
   return 'custom message'
 const customCleanStore = ({ current, parent, mainStore }) =>
   current && parent
@@ -67,7 +68,7 @@ const customCleanStore = ({ current, parent, mainStore }) =>
 
 // configuration
 const config = {
-  getMessage: ({ current, parent }) => buildCustomMessage(current, parent),
+  getMessage: ({ current, parent, mainStore }) => buildCustomMessage({current, parent, mainStore}),
   cleanStore: ({ current, parent, mainStore }) =>
     customCleanStore({ current, parent, mainStore }),
 }
@@ -85,7 +86,7 @@ const middleware = [
 
 > Run `$$LogTotalMessages()` in the developer console to display the number of displayed messages.
 
-<img src="https://drive.google.com/uc?export=view&id=1NFzH13u96v71eGTYZ-TVDRcOiHm4H3fu" style="width: 650px; max-width: 100%; height: auto" />
+<img src="https://drive.google.com/uc?export=view&id=1F6Cca2yEC32qC2OhfjfSS-JUFcfScZTy" style="width: 650px; max-width: 100%; height: auto" />
 
 ## Credits
 

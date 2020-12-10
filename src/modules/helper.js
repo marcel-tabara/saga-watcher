@@ -37,7 +37,7 @@ export const getArgs = args => {
   }
 }
 
-export const getMessage = ({ current, parent }) => {
+export const getMessage = ({ current, parent, mainStore }) => {
   const ignoredEffects = [
     'SELECT',
     'TAKE',
@@ -52,7 +52,7 @@ export const getMessage = ({ current, parent }) => {
 
   const getPayloadArgNotObject = () =>
     typeof get(parent, 'effect.payload.args[0]') !== 'object'
-      ? get(parent, 'effect.payload.args[0]', '').toLowerCase()
+      ? get(parent, 'effect.payload.args[0]', '')
       : ''
   const sameOne = () => {
     if (typeof get(parent, 'effect.payload.args[0]') === 'object') {
@@ -60,13 +60,13 @@ export const getMessage = ({ current, parent }) => {
     }
     return (
       get(current, 'effect.payload.fn.name', '').toLowerCase() ===
-      getPayloadArgNotObject()
+      getPayloadArgNotObject().toLowerCase()
     )
   }
 
   const getMessageData = () => {
     try {
-      return `${get(parent, 'effect.payload.fn', '').toLowerCase()} ${get(
+      return `${get(parent, 'effect.payload.fn', '')} ${get(
         parent,
         'effect.type',
         ''
@@ -74,19 +74,15 @@ export const getMessage = ({ current, parent }) => {
         parent,
         'effect.payload.args[0].type',
         ''
-      ).toLowerCase()}${getPayloadArgNotObject()} ${get(
+      )}${getPayloadArgNotObject()} ${get(
         current,
         'effect.type',
         ''
-      ).toLowerCase()}s ${get(
-        current,
-        'effect.payload.action.type',
-        ''
-      ).toLowerCase()}${get(
-        current,
-        'effect.payload.fn.name',
-        ''
-      ).toLowerCase()}`
+      ).toLowerCase()}s ${
+        get(current, 'effect.payload.action.type') ||
+        get(current, 'effect.payload.fn.name') ||
+        '?'
+      }`
     } catch (error) {
       return console.log('########## error', error)
     }
