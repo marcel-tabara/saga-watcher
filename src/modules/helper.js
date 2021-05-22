@@ -60,7 +60,7 @@ export const getMessage = ({ current, parent, mainStore }) => {
     }
     return (
       get(current, 'effect.payload.fn.name', '').toLowerCase() ===
-      getPayloadArgNotObject().toLowerCase()
+      getPayloadArgNotObject().toString().toLowerCase()
     )
   }
 

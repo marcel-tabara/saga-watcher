@@ -2,9 +2,9 @@
 
 Simple, and configurable redux-saga monitor.
 
-You can define a custom getMessage function to filter unwanted effects and build a custom message (see the default implementation for example).
+Define a custom getMessage function to filter out unwanted effects and build a custom message (see the default implementation for example).
 
-By default, all the effects are recorded in the mainStore array, which is used to identify the parent effect. You can define a custom cleanStore function to customize the logic for cleaning the store.
+By default, all effects are recorded in the mainStore array, which is used to identify the parent effect. Define a custom cleanStore function to customize the logic for cleaning the array.
 
 ## Installation
 
